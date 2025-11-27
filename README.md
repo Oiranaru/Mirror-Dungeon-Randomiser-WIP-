@@ -38,6 +38,7 @@ Select the IDs/EGOs you actually own so the randomiser only pulls from them and 
 ---
 
 ## Running locally
+Either click the live site link up at the top of this explanation or, if you wish to run it actually locally:
 
 1. Clone or download the repo.
 2. Open `index.html` in a modern browser.
