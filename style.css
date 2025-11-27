@@ -1,0 +1,104 @@
+body {
+  font-family: sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1 {
+  text-align: center;
+}
+
+section {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+
+pre {
+  background: #f5f5f5;
+  padding: 0.5rem;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+.hidden {
+  display: none;
+}
+
+#settings {
+  margin-top: 2rem;
+}
+
+.sinner-block {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.sinner-block h3 {
+  margin: 0 0 0.5rem;
+}
+
+.sinner-block h4 {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 0.9rem;
+}
+
+.sinner-block label {
+  display: block;
+  font-size: 0.9rem;
+}
+#saved-teams {
+  margin-top: 2rem;
+}
+
+#savedTeamsList {
+  margin-top: 0.75rem;
+}
+
+.saved-team-card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.saved-team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.saved-team-name {
+  font-weight: bold;
+}
+
+.saved-team-meta {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.saved-team-actions button {
+  margin-left: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+}
+#run-setup button,
+#settings button,
+#saved-teams button {
+  margin-top: 0.4rem;
+}

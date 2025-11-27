@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mirror Dungeon Randomiser</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Mirror Dungeon Randomiser</h1>
+
+  <!-- Run setup -->
+  <section id="run-setup">
+    <h2>Run setup</h2>
+
+    <label>
+      Number of Sinners:
+      <input type="number" id="numSinners" value="12" min="1" max="12">
+    </label>
+
+    <label>
+      EGOs per Sinner (1–5):
+      <input type="number" id="egosPerSinner" value="3" min="1" max="5">
+    </label>
+
+    <label>
+      <input type="checkbox" id="randomizeOrder">
+      Randomise deployment order (1–7 on-field, rest support)
+    </label>
+
+    <button id="randomizeRunBtn">Randomise Run</button>
+
+    <h3>Result</h3>
+    <pre id="runResult"></pre>
+    <button id="copyResultBtn">Copy result to clipboard</button>
+  </section>
+
+  <!-- Ownership settings -->
+  <section id="settings">
+    <h2>Ownership settings</h2>
+    <p>
+      Tick the Identities and EGOs you own. Base LCB Identities and base ZAYIN EGOs
+      are always available as a fallback.
+    </p>
+
+    <!-- These two buttons should always be visible -->
+    <button id="toggleSettings">Show / hide ownership list</button>
+    <button id="resetOwnershipBtn">Reset ownership to base only</button>
+
+    <!-- This div is the only part that starts hidden -->
+    <div id="ownershipContainer" class="hidden"></div>
+  </section>
+
+  <!-- Saved teams -->
+  <section id="saved-teams">
+    <h2>Saved teams</h2>
+    <label>
+      Team name:
+      <input type="text" id="saveTeamName" placeholder="e.g. Funny Bleed Run">
+    </label>
+    <button id="saveTeamBtn">Save current result</button>
+    <button id="clearTeamsBtn">Clear all saved teams</button>
+
+    <div id="savedTeamsList"></div>
+  </section>
+
+  <script src="data.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
