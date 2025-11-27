@@ -38,6 +38,15 @@ function randomizeSinners(numSinners) {
   return getRandomItems(sinners, count);
 }
 
+function getSinnerOrderMap() {
+  const map = {};
+  for (let i = 0; i < sinners.length; i++) {
+    const s = sinners[i];
+    map[s.id] = i;
+  }
+  return map;
+}
+
 // Group EGOs by rank
 function groupEgosByRankForSinner(sinnerId) {
   const sinnerEgos = getOwnedEgosForSinner(sinnerId);
@@ -357,12 +366,23 @@ if (randomizeRunBtn) {
     const egosPerSinnerValue = parseInt(egosPerSinnerInput.value, 10) || 1;
     const shouldRandomizeOrder = randomizeOrderCheckbox.checked;
 
-    const chosenSinners = randomizeSinners(numSinnersValue);
+        const chosenSinners = randomizeSinners(numSinnersValue);
     const setup = randomizeSetupForSinners(chosenSinners, egosPerSinnerValue);
 
-    let orderedSetup = setup;
+    const orderMap = getSinnerOrderMap();
+    let orderedSetup;
+
     if (shouldRandomizeOrder) {
+      // Fully random deployment order (this is the actual deployment sequence)
       orderedSetup = shuffle(setup);
+    } else {
+      // Sort by canonical Sinner order (Yi Sang → Faust → Don → ...)
+      orderedSetup = setup.slice(); // shallow copy
+      orderedSetup.sort(function (a, b) {
+        const indexA = orderMap[a.sinner.id] || 0;
+        const indexB = orderMap[b.sinner.id] || 0;
+        return indexA - indexB;
+      });
     }
 
     const lines = orderedSetup.map(function (entry, index) {
