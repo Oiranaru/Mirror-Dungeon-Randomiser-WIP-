@@ -35,7 +35,7 @@
   </section>
 
   <!-- Ownership settings -->
-    <section id="settings">
+  <section id="settings">
   <h2>Owned IDs/EGOs</h2>
   <p>
     Tick the Identities and EGOs you own. Base LCB Identities and base ZAYIN EGOs
@@ -54,6 +54,47 @@
     <button id="ownershipSearchBtn">Search</button>
     <button id="ownershipClearSearchBtn">Clear search</button>
   </div>
+
+  <!-- NEW: keyword filter bar -->
+  <div id="keywordFilterBar">
+  <button id="toggleKeywordFiltersBtn">Filter by keyword</button>
+  <span id="activeKeywordFiltersDisplay">No keyword filters active</span>
+  <button id="clearKeywordFiltersBtn">Clear keyword filters</button>
+
+  <div id="keywordFilters" class="hidden">
+    <p>Select one or more keywords:</p>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="burn"> Burn
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="bleed"> Bleed
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="tremor"> Tremor
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="sinking"> Sinking
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="rupture"> Rupture
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="poise"> Poise
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="charge"> Charge
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="slash"> Slash
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="blunt"> Blunt
+    </label>
+    <label class="keyword-filter">
+      <input type="checkbox" data-keyword="pierce"> Pierce
+    </label>
+  </div>
+</div>
 
   <button id="toggleSettings">Show / hide IDs/EGOs</button>
   <button id="resetOwnershipBtn">Reset to LCB ID/base ZAYIN EGO only</button>

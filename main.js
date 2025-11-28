@@ -125,6 +125,64 @@ function saveOwnershipToStorage() {
   }
 }
 
+function passesKeywordFilter(entry) {
+  // No keyword filters -> everything passes
+  if (!entry || activeKeywordFilters.size === 0) {
+    return true;
+  }
+
+  const kws = entry.keywords || [];
+  if (!kws || kws.length === 0) {
+    // If something somehow has no keywords, hide it when filters are active
+    return false;
+  }
+
+  for (let i = 0; i < kws.length; i++) {
+    const kw = (kws[i] || "").toLowerCase();
+    if (activeKeywordFilters.has(kw)) {
+      return true; // any match is enough
+    }
+  }
+
+  return false;
+}
+
+function updateActiveKeywordFiltersDisplay() {
+  const display = document.getElementById("activeKeywordFiltersDisplay");
+  if (!display) return;
+
+  if (activeKeywordFilters.size === 0) {
+    display.textContent = "No keyword filters active";
+  } else {
+    const arr = Array.from(activeKeywordFilters).map(function (k) {
+      return k.charAt(0).toUpperCase() + k.slice(1);
+    });
+    display.textContent = "Active keyword filters: " + arr.join(", ");
+  }
+}
+
+function setupKeywordFilterCheckboxes() {
+  const container = document.getElementById("keywordFilters");
+  if (!container) return;
+
+  const boxes = container.querySelectorAll("input[type='checkbox'][data-keyword]");
+  for (let i = 0; i < boxes.length; i++) {
+    const box = boxes[i];
+    const kw = (box.dataset.keyword || "").toLowerCase();
+    if (!kw) continue;
+
+    box.addEventListener("change", function () {
+      if (box.checked) {
+        activeKeywordFilters.add(kw);
+      } else {
+        activeKeywordFilters.delete(kw);
+      }
+      updateActiveKeywordFiltersDisplay();
+      buildOwnershipUI();
+    });
+  }
+}
+
 // Build Ownership Lists
 function buildOwnershipUI() {
   const container = document.getElementById("ownershipContainer");
@@ -173,8 +231,16 @@ function buildOwnershipUI() {
       noneText.textContent = "No identities defined.";
       body.appendChild(noneText);
     } else {
+      let anyIdShown = false;
+
       for (let i = 0; i < identitiesForSinner.length; i++) {
         const idn = identitiesForSinner[i];
+
+        // Keyword filter
+        if (!passesKeywordFilter(idn)) {
+          continue;
+        }
+        anyIdShown = true;
 
         const label = document.createElement("label");
         label.className = "ownership-item";
@@ -211,6 +277,12 @@ function buildOwnershipUI() {
 
         body.appendChild(label);
       }
+
+      if (!anyIdShown) {
+        const noneMatch = document.createElement("p");
+        noneMatch.textContent = "No identities match current keyword filters.";
+        body.appendChild(noneMatch);
+      }
     }
 
     // EGOs
@@ -223,8 +295,16 @@ function buildOwnershipUI() {
       noneEgo.textContent = "No EGOs defined.";
       body.appendChild(noneEgo);
     } else {
+      let anyEgoShown = false;
+
       for (let j = 0; j < egosForSinner.length; j++) {
         const ego = egosForSinner[j];
+
+        // Keyword filter
+        if (!passesKeywordFilter(ego)) {
+          continue;
+        }
+        anyEgoShown = true;
 
         const labelEgo = document.createElement("label");
         labelEgo.className = "ownership-item";
@@ -261,6 +341,12 @@ function buildOwnershipUI() {
 
         body.appendChild(labelEgo);
       }
+
+      if (!anyEgoShown) {
+        const noneMatchEgo = document.createElement("p");
+        noneMatchEgo.textContent = "No EGOs match current keyword filters.";
+        body.appendChild(noneMatchEgo);
+      }
     }
 
     block.appendChild(body);
@@ -284,6 +370,7 @@ function buildOwnershipUI() {
 // --- Saved teams (presets) ---
 let lastRunText = "";
 let savedTeams = [];
+let activeKeywordFilters = new Set(); // e.g. "bleed", "slash"
 
 function loadSavedTeamsFromStorage() {
   try {
@@ -473,6 +560,42 @@ function applyOwnershipSearch() {
   }
 }
 
+function updateActiveKeywordFiltersDisplay() {
+  const display = document.getElementById("activeKeywordFiltersDisplay");
+  if (!display) return;
+
+  if (activeKeywordFilters.size === 0) {
+    display.textContent = "No keyword filters active";
+  } else {
+    const arr = Array.from(activeKeywordFilters).map(function (k) {
+      return k.charAt(0).toUpperCase() + k.slice(1);
+    });
+    display.textContent = "Active keyword filters: " + arr.join(", ");
+  }
+}
+
+function setupKeywordFilterCheckboxes() {
+  const container = document.getElementById("keywordFilters");
+  if (!container) return;
+
+  const boxes = container.querySelectorAll("input[type='checkbox'][data-keyword]");
+  for (let i = 0; i < boxes.length; i++) {
+    const box = boxes[i];
+    const kw = (box.dataset.keyword || "").toLowerCase();
+    if (!kw) continue;
+
+    box.addEventListener("change", function () {
+      if (box.checked) {
+        activeKeywordFilters.add(kw);
+      } else {
+        activeKeywordFilters.delete(kw);
+      }
+      updateActiveKeywordFiltersDisplay();
+      buildOwnershipUI();
+    });
+  }
+}
+
 // --- Hook up to the page ---
 const runResultEl = document.getElementById("runResult");
 const randomizeRunBtn = document.getElementById("randomizeRunBtn");
@@ -486,6 +609,15 @@ const resetOwnershipBtn = document.getElementById("resetOwnershipBtn");
 const selectAllIdsBtn = document.getElementById("selectAllIdsBtn");
 const selectAllEgosBtn = document.getElementById("selectAllEgosBtn");
 const selectAllOwnershipBtn = document.getElementById("selectAllOwnershipBtn");
+
+// NEW: keyword filter elements
+const toggleKeywordFiltersBtn = document.getElementById("toggleKeywordFiltersBtn");
+const clearKeywordFiltersBtn = document.getElementById("clearKeywordFiltersBtn");
+
+// search elements...
+const ownershipSearchInput = document.getElementById("ownershipSearchInput");
+const ownershipSearchBtn = document.getElementById("ownershipSearchBtn");
+const ownershipClearSearchBtn = document.getElementById("ownershipClearSearchBtn");
 
 // Select ALL IDs
 if (selectAllIdsBtn) {
@@ -539,10 +671,6 @@ if (selectAllOwnershipBtn) {
 }
 
 // NEW: search elements
-const ownershipSearchInput = document.getElementById("ownershipSearchInput");
-const ownershipSearchBtn = document.getElementById("ownershipSearchBtn");
-const ownershipClearSearchBtn = document.getElementById("ownershipClearSearchBtn");
-
 const saveTeamNameInput = document.getElementById("saveTeamName");
 const saveTeamBtn = document.getElementById("saveTeamBtn");
 const clearTeamsBtn = document.getElementById("clearTeamsBtn");
@@ -552,6 +680,34 @@ loadOwnershipFromStorage();
 buildOwnershipUI();
 loadSavedTeamsFromStorage();
 renderSavedTeamsList();
+setupKeywordFilterCheckboxes();
+updateActiveKeywordFiltersDisplay();
+
+// Toggle show/hide for keyword filter list
+if (toggleKeywordFiltersBtn) {
+  const keywordFiltersContainer = document.getElementById("keywordFilters");
+  toggleKeywordFiltersBtn.addEventListener("click", function () {
+    if (!keywordFiltersContainer) return;
+    keywordFiltersContainer.classList.toggle("hidden");
+  });
+}
+
+// Clear all keyword filters
+if (clearKeywordFiltersBtn) {
+  clearKeywordFiltersBtn.addEventListener("click", function () {
+    const container = document.getElementById("keywordFilters");
+    if (container) {
+      const boxes = container.querySelectorAll("input[type='checkbox'][data-keyword]");
+      for (let i = 0; i < boxes.length; i++) {
+        boxes[i].checked = false;
+      }
+    }
+
+    activeKeywordFilters.clear();
+    updateActiveKeywordFiltersDisplay();
+    buildOwnershipUI();
+  });
+}
 
 // Toggle show/hide for ownership list
 if (toggleSettingsBtn && ownershipContainer) {

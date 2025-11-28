@@ -235,3 +235,56 @@ pre {
   outline: 1px solid #f0ad4e;
   border-radius: 4px;
 }
+/* Sinner ownership list blocks */
+.sinner-block {
+  margin-bottom: 0.75rem;
+}
+
+.sinner-body.hidden {
+  display: none;
+}
+
+.ownership-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.ownership-item img {
+  width: 64px;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* Search highlight (if you added this earlier, keep it) */
+.search-hit {
+  outline: 1px solid #f97316;
+  background: rgba(249, 115, 22, 0.12);
+}
+
+/* --- NEW: keyword filter bar --- */
+
+#keywordFilterBar {
+  margin: 0.5rem 0 0.75rem;
+}
+
+#keywordFilters {
+  margin-top: 0.35rem;
+}
+
+.keyword-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+#activeKeywordFiltersDisplay {
+  margin-left: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
