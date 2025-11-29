@@ -1075,6 +1075,41 @@ const sinnerEgos = {
   ]
 };
 
+// --- EGO Gifts ---
+// Each gift: unique id, display name, optional image, and keywords (burn, bleed, etc.)
+const egoGifts = [
+  { id: "gift-hellterfly", name: "Hellterfly's Dream", img: "img/gifts/gift-hellterfly.webp", keywords: ["burn", ] },
+  { id: "gift-perversion", name: "Perversion", img: "img/gifts/gift-perversion.webp", keywords: ["keywordless", ] },
+  { id: "gift-ashes", name: "Ashes to Ashes", img: "img/gifts/gift-ashes.webp", keywords: ["burn", ] },
+  { id: "gift-phlebotomy", name: "Phlebotomy Pack", img: "img/gifts/gift-phlebotomy.webp", keywords: ["keywordless", ] },
+  { id: "gift-wound", name: "Wound Clerid", img: "img/gifts/gift-wound.webp", keywords: ["bleed", ] },
+  { id: "gift-coffee", name: "Coffee and Cranes", img: "img/gifts/gift-coffee.webp", keywords: ["keywordless", ] },
+  { id: "gift-eclipse", name: "Eclipse of Scarlet Moths", img: "img/gifts/gift-eclipse.webp", keywords: ["keywordless", ] },
+  { id: "gift-grimy", name: "Grimy Stake", img: "img/gifts/gift-grimy.webp", keywords: ["bleed", ] },
+  { id: "gift-fiery", name: "Fiery Down", img: "img/gifts/gift-fiery.webp", keywords: ["burn", ] },
+  { id: "gift-bloody", name: "Bloody Gadget", img: "img/gifts/gift-bloody.webp", keywords: ["keywordless", ] },
+  { id: "gift-sunshower", name: "Sunshower", img: "img/gifts/gift-sunshower.webp", keywords: ["keywordless", ] },
+  { id: "gift-today", name: "Today's Expression", img: "img/gifts/gift-today.webp", keywords: ["blunt", ] },
+  { id: "gift-bundle", name: "Talisman Bundle", img: "img/gifts/gift-bundle.webp", keywords: ["rupture", ] },
+  { id: "gift-rustycoin", name: "Rusty Commemorative Coin", img: "img/gifts/gift-rustycoin.webp", keywords: ["keywordless", ] },
+  { id: "gift-bloodsweattears", name: "Blood, Sweat and Tears", img: "img/gifts/gift-bloodsweattears.webp", keywords: ["tremor", ] },
+  { id: "gift-greenspirit", name: "Green Spirit", img: "img/gifts/gift-greenspirit.webp", keywords: ["tremor", ] },
+  { id: "gift-lithograph", name: "Lithograph", img: "img/gifts/gift-lithograph.webp", keywords: ["keywordless", ] },
+  { id: "gift-crownroses", name: "Crown of Roses", img: "img/gifts/gift-crownroses.webp", keywords: ["rupture", ] },
+  { id: "gift-stickymuck", name: "Sticky Muck", img: "img/gifts/gift-stickymuck.webp", keywords: ["pierce"] },
+  { id: "gift-whitegossypium", name: "White Gossypium", img: "img/gifts/gift-whitegossypium.webp", keywords: ["bleed"] },
+  { id: "gift-lighter", name: "Blue Zippo Lighter", img: "img/gifts/gift-lighter.webp", keywords: ["keywordless"] },
+  { id: "gift-phantom", name: "Phantom Pain", img: "img/gifts/gift-phantom.png", keywords: ["keywordless"] },
+  { id: "gift-thunderbranch", name: "Thunderbranch", img: "img/gifts/gift-thunderbranch.webp", keywords: ["rupture"] },
+  { id: "gift-eyeball", name: "Melted Eyeball", img: "img/gifts/gift-eyeball.webp", keywords: ["tremor"] },
+  { id: "gift-coat", name: "Grey Coat", img: "img/gifts/gift-coat.webp", keywords: ["keywordless"] },
+  { id: "gift-tattoo", name: "Late-bloomer's Tattoo", img: "img/gifts/gift-tattoo.webp", keywords: ["keywordless"] },
+  { id: "gift-loweststar", name: "Lowest Star", img: "img/gifts/gift-loweststar.webp", keywords: ["blunt"] },
+  { id: "gift-prejudice", name: "Prejudice", img: "img/gifts/gift-prejudice.webp", keywords: ["keywordless"] },
+
+  // ...keep adding new gifts here...
+];
+
 // --- Flatten per-Sinner data into global arrays ---
 const identities = Object.values(sinnerIdentities).reduce(
   (acc, arr) => acc.concat(arr),

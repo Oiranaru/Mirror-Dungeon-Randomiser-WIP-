@@ -62,9 +62,10 @@ function groupEgosByRankForSinner(sinnerId) {
   return groups;
 }
 
-// One Identity per Sinner, 1–5 EGOs per Sinner, max 1 EGO per rank
+// One Identity per Sinner, 1–4 EGOs per Sinner, max 1 EGO per rank
 function randomizeSetupForSinners(chosenSinners, egosPerSinner) {
-  const desiredSlots = Math.max(1, Math.min(5, egosPerSinner));
+  const desiredSlots = Math.max(1, Math.min(4, egosPerSinner));
+  // ...
 
   return chosenSinners.map(function (sinner) {
     // 1) Identity
@@ -151,7 +152,9 @@ function gatherCurrentRunSettings() {
   // true = using 1–11 Sinner limit; false = "all 12" mode
   const useNumLimit = !!(randomizeNumSinnersToggle && randomizeNumSinnersToggle.checked);
   const num = parseInt(numSinnersInput.value, 10) || 11;
-  const egosPer = parseInt(egosPerSinnerInput.value, 10) || 3;
+    let egosPer = parseInt(egosPerSinnerInput.value, 10) || 3;
+  if (egosPer < 1) egosPer = 1;
+  if (egosPer > 4) egosPer = 4;
   const randomOrder = !!(randomizeOrderCheckbox && randomizeOrderCheckbox.checked);
   const egoRankFilterOn = !!(randomizeEgoRanksToggle && randomizeEgoRanksToggle.checked);
   const allowedRanks = getAllowedEgoRanks();
@@ -526,9 +529,11 @@ function pickRandomIdentityForSinner(sinnerId) {
   return owned[index];
 }
 
-// --- EGO selection with rank filter & forced ZAYIN ---
+// --- EGO selection with rank filter & forced ZAYIN, max 1 per rank ---
 function pickRandomEgosForSinner(sinnerId, egosPerSinner, allowedRanks) {
   const allEgos = sinnerEgos[sinnerId] || [];
+
+  // Only EGOs the user owns
   const ownedEgos = allEgos.filter(function (ego) {
     return isEgoOwned(ego.id);
   });
@@ -539,59 +544,76 @@ function pickRandomEgosForSinner(sinnerId, egosPerSinner, allowedRanks) {
 
   const allowedRankSet = allowedRanks ? new Set(allowedRanks) : null;
 
-  const zayins = ownedEgos.filter(function (ego) {
-    return ego.rank === "ZAYIN";
-  });
-  const others = ownedEgos.filter(function (ego) {
-    return ego.rank !== "ZAYIN";
-  });
-
-  const result = [];
-
-  // Always equip a ZAYIN
-  if (zayins.length > 0) {
-    if (allowedRankSet && !allowedRankSet.has("ZAYIN")) {
-      // Rank filtering ON, but ZAYIN not allowed:
-      // force base ZAYIN (or any ZAYIN) without randomising it.
-      const baseZayin = zayins.find(function (ego) { return ego.isBase; });
-      result.push(baseZayin || zayins[0]);
-    } else {
-      // Either no filtering, or ZAYIN is allowed -> random ZAYIN
-      const randIndex = Math.floor(Math.random() * zayins.length);
-      result.push(zayins[randIndex]);
+  // Group owned EGOs by rank
+  const egosByRank = {};
+  for (let i = 0; i < ownedEgos.length; i++) {
+    const ego = ownedEgos[i];
+    const rank = ego.rank || "UNKNOWN";
+    if (!egosByRank[rank]) {
+      egosByRank[rank] = [];
     }
+    egosByRank[rank].push(ego);
   }
 
+  const result = [];
+  const usedRanks = new Set();
+
+  // 1) Always equip a ZAYIN if possible
+  if (egosByRank["ZAYIN"] && egosByRank["ZAYIN"].length > 0) {
+    const zList = egosByRank["ZAYIN"];
+
+    if (allowedRankSet && !allowedRankSet.has("ZAYIN")) {
+      // Rank filter ON and ZAYIN "not allowed":
+      // still force a base ZAYIN (or the first ZAYIN) without randomising its rank.
+      const baseZayin = zList.find(function (ego) { return ego.isBase; });
+      result.push(baseZayin || zList[0]);
+    } else {
+      // ZAYIN can be randomised: pick a random ZAYIN
+      const zIndex = Math.floor(Math.random() * zList.length);
+      result.push(zList[zIndex]);
+    }
+
+    usedRanks.add("ZAYIN");
+  }
+
+  // If we only needed 1 EGO total, we're done
   if (result.length >= egosPerSinner) {
     return result;
   }
 
-  const usedRanks = new Set(result.map(function (ego) { return ego.rank; }));
-
-  const candidateOthers = others.filter(function (ego) {
-    if (allowedRankSet && !allowedRankSet.has(ego.rank)) {
-      return false;
-    }
-    if (usedRanks.has(ego.rank)) {
-      return false;
-    }
-    return true;
+  // 2) Build a list of *other* ranks we can use
+  let candidateRanks = Object.keys(egosByRank).filter(function (rank) {
+    return rank !== "ZAYIN";
   });
 
-  // shuffle candidateOthers
-  const shuffled = candidateOthers.slice();
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = shuffled[i];
-    shuffled[i] = shuffled[j];
-    shuffled[j] = tmp;
+  if (allowedRankSet) {
+    candidateRanks = candidateRanks.filter(function (rank) {
+      return allowedRankSet.has(rank);
+    });
   }
 
-  for (let i = 0; i < shuffled.length && result.length < egosPerSinner; i++) {
-    result.push(shuffled[i]);
-    usedRanks.add(shuffled[i].rank);
+  // Shuffle ranks so we pick a random subset of ranks
+  candidateRanks = shuffle(candidateRanks);
+
+  // 3) Pick at most one EGO per remaining rank
+  for (let i = 0; i < candidateRanks.length && result.length < egosPerSinner; i++) {
+    const rank = candidateRanks[i];
+    if (usedRanks.has(rank)) {
+      continue; // safety, though it shouldn't happen
+    }
+
+    const list = egosByRank[rank];
+    if (!list || list.length === 0) {
+      continue;
+    }
+
+    const idx = Math.floor(Math.random() * list.length);
+    result.push(list[idx]);
+    usedRanks.add(rank);
   }
 
+  // Note: if there aren't enough distinct ranks owned, you'll get fewer
+  // EGOs than requested – which matches in-game limitations.
   return result;
 }
 
@@ -1209,7 +1231,9 @@ if (randomizeEgoRanksToggle) {
 if (randomizeRunBtn) {
   randomizeRunBtn.addEventListener("click", function () {
     const numLimitEnabled = !!(randomizeNumSinnersToggle && randomizeNumSinnersToggle.checked);
-    const egosPerSinner = parseInt(egosPerSinnerInput.value, 10) || 3;
+        let egosPerSinner = parseInt(egosPerSinnerInput.value, 10) || 3;
+    if (egosPerSinner < 1) egosPerSinner = 1;
+    if (egosPerSinner > 4) egosPerSinner = 4;
     const randomizeOrder = !!(randomizeOrderCheckbox && randomizeOrderCheckbox.checked);
     const allowedRanks = getAllowedEgoRanks();
 
@@ -1297,22 +1321,35 @@ if (randomizeRunBtn) {
       lines.push(headerPrefix + sinner.name + roleSuffix);
 
       // Identity line
-      const identityName = identity && identity.name ? identity.name : "None";
-      lines.push("  Identity: " + identityName);
+const identityName = identity && identity.name ? identity.name : "None";
+lines.push("  Identity: " + identityName);
 
-      // EGOs block
-      lines.push("  EGOs:");
-      if (!egos || egos.length === 0) {
-        lines.push("      (No EGOs selected)");
-      } else {
-        for (let e = 0; e < egos.length; e++) {
-          const ego = egos[e];
-          lines.push("      [" + ego.rank + "] " + ego.name);
-        }
-      }
+// EGOs block
+lines.push("  EGOs:");
+if (!egos || egos.length === 0) {
+  lines.push("      (No EGOs selected)");
+} else {
+  // --- sort EGOs by rank: ZAYIN < TETH < HE < WAW (then anything else) ---
+  const rankOrder = { ZAYIN: 0, TETH: 1, HE: 2, WAW: 3, ALEPH: 4 };
 
-      // Blank line between Sinners
-      lines.push("");
+  const sortedEgos = egos.slice().sort(function (a, b) {
+    const aVal = rankOrder[a.rank] !== undefined ? rankOrder[a.rank] : 99;
+    const bVal = rankOrder[b.rank] !== undefined ? rankOrder[b.rank] : 99;
+    if (aVal !== bVal) {
+      return aVal - bVal;
+    }
+    // tie-breaker: alphabetical by name
+    return a.name.localeCompare(b.name);
+  });
+
+  for (let e = 0; e < sortedEgos.length; e++) {
+    const ego = sortedEgos[e];
+    lines.push("      [" + ego.rank + "] " + ego.name);
+  }
+}
+
+// Blank line between Sinners
+lines.push("");
     }
 
     const resultText = lines.join("\n");
