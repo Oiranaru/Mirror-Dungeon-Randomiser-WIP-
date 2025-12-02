@@ -1,4 +1,4 @@
-# Mirror Dungeon Randomiser (WIP)
+# Mirror Dungeon Randomiser
 
 A small web tool that randomises teams for **Limbus Company’s Mirror Dungeon**.
 
