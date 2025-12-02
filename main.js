@@ -152,14 +152,25 @@ function gatherCurrentRunSettings() {
   // true = using 1–11 Sinner limit; false = "all 12" mode
   const useNumLimit = !!(randomizeNumSinnersToggle && randomizeNumSinnersToggle.checked);
   const num = parseInt(numSinnersInput.value, 10) || 11;
-    let egosPer = parseInt(egosPerSinnerInput.value, 10) || 3;
+
+  let egosPer = parseInt(egosPerSinnerInput.value, 10) || 3;
   if (egosPer < 1) egosPer = 1;
   if (egosPer > 4) egosPer = 4;
+
   const randomOrder = !!(randomizeOrderCheckbox && randomizeOrderCheckbox.checked);
   const egoRankFilterOn = !!(randomizeEgoRanksToggle && randomizeEgoRanksToggle.checked);
   const allowedRanks = getAllowedEgoRanks();
+
   const manualIds = getManuallySelectedSinners();
   const manualChoiceEnabled = !!(useManualSinnerSelection && useManualSinnerSelection.checked);
+
+  // NEW: shop rule checkboxes
+  const giftRuleEnabled =
+    !!(enableGiftShopRuleCheckbox && enableGiftShopRuleCheckbox.checked);
+  const giftNoReacquireEnabled =
+    !!(enableGiftNoReacquireRuleCheckbox && enableGiftNoReacquireRuleCheckbox.checked);
+  const randomiseSinnersEachShopEnabled =
+    !!(enableRandomiseSinnersEachShopCheckbox && enableRandomiseSinnersEachShopCheckbox.checked);
 
   return {
     randomizeNumSinners: useNumLimit,
@@ -169,13 +180,19 @@ function gatherCurrentRunSettings() {
     egoRankFilterOn: egoRankFilterOn,
     allowedEgoRanks: allowedRanks,
     manualSinnerIds: manualIds,
-    useManualSinnerSelection: manualChoiceEnabled
+    useManualSinnerSelection: manualChoiceEnabled,
+
+    // NEW: stored as part of the preset
+    giftRuleEnabled: giftRuleEnabled,
+    giftNoReacquireEnabled: giftNoReacquireEnabled,
+    randomiseSinnersEachShopEnabled: randomiseSinnersEachShopEnabled
   };
 }
 
 function applyRunSettingsPreset(settings) {
   if (!settings) return;
 
+  // --- Number of Sinners toggle + value ---
   if (randomizeNumSinnersToggle) {
     randomizeNumSinnersToggle.checked = !!settings.randomizeNumSinners;
   }
@@ -184,42 +201,70 @@ function applyRunSettingsPreset(settings) {
     numSinnersInput.value = String(settings.numSinners);
   }
 
+  // Make sure manual block / dropdown enabled/disabled correctly
   if (randomizeNumSinnersToggle) {
     randomizeNumSinnersToggle.dispatchEvent(new Event("change"));
   }
 
+  // --- EGOs per Sinner ---
   if (typeof settings.egosPerSinner === "number" && egosPerSinnerInput) {
     egosPerSinnerInput.value = String(settings.egosPerSinner);
   }
 
+  // --- Deployment order ---
   if (randomizeOrderCheckbox && typeof settings.randomizeOrder === "boolean") {
     randomizeOrderCheckbox.checked = settings.randomizeOrder;
   }
 
+  // --- EGO rank filter toggle ---
   if (randomizeEgoRanksToggle) {
     randomizeEgoRanksToggle.checked = !!settings.egoRankFilterOn;
     randomizeEgoRanksToggle.dispatchEvent(new Event("change"));
   }
 
+  // --- Manual Sinner selection list ---
   const manualIds = settings.manualSinnerIds || [];
   const manualBoxes = document.querySelectorAll(".manual-sinner-checkbox");
   manualBoxes.forEach(function (box) {
     box.checked = manualIds.indexOf(box.value) !== -1;
   });
 
+  // --- EGO rank checkboxes ---
   const ranks = settings.allowedEgoRanks || [];
   const rankBoxes = document.querySelectorAll(
     "#egoRankFilterContainer input[type='checkbox'][data-ego-rank]"
   );
   rankBoxes.forEach(function (box) {
     if (box.disabled || !box.dataset.egoRank) return;
-    box.checked = ranks.length === 0 ? true : ranks.indexOf(box.dataset.egoRank) !== -1;
+    box.checked =
+      ranks.length === 0 ? true : ranks.indexOf(box.dataset.egoRank) !== -1;
   });
 
+  // Manual selection master toggle
   if (useManualSinnerSelection && typeof settings.useManualSinnerSelection === "boolean") {
     useManualSinnerSelection.checked = settings.useManualSinnerSelection;
   }
 
+  // --- NEW: shop rule checkboxes ---
+  if (enableGiftShopRuleCheckbox && typeof settings.giftRuleEnabled === "boolean") {
+    enableGiftShopRuleCheckbox.checked = settings.giftRuleEnabled;
+  }
+
+  if (enableGiftNoReacquireRuleCheckbox &&
+      typeof settings.giftNoReacquireEnabled === "boolean") {
+    enableGiftNoReacquireRuleCheckbox.checked = settings.giftNoReacquireEnabled;
+  }
+
+  if (enableRandomiseSinnersEachShopCheckbox &&
+      typeof settings.randomiseSinnersEachShopEnabled === "boolean") {
+    enableRandomiseSinnersEachShopCheckbox.checked =
+      settings.randomiseSinnersEachShopEnabled;
+  }
+
+  // Keep dependent UI for gift rules correct (disabling second checkbox etc)
+  updateGiftRuleDependents();
+
+  // Final tidy-up for manual selection helper text & limits
   updateManualSinnerHelpText();
   enforceManualSinnerSelectionLimit();
 }
@@ -237,21 +282,62 @@ function renderRunPresetsList() {
 
   savedRunPresets.forEach(function (preset, index) {
     const row = document.createElement("div");
-    row.className = "saved-team-row"; // reuse your existing styling
+    row.className = "run-preset-row";
 
     const nameSpan = document.createElement("span");
+    nameSpan.className = "run-preset-name";
     nameSpan.textContent = preset.name || ("Preset " + (index + 1));
     row.appendChild(nameSpan);
 
-    const loadBtn = document.createElement("button");
-    loadBtn.textContent = "Load";
-    loadBtn.addEventListener("click", function () {
-      applyRunSettingsPreset(preset.settings);
-    });
-    row.appendChild(loadBtn);
+    const actions = document.createElement("div");
+    actions.className = "run-preset-actions";
 
+    // Rename
+    const renameBtn = document.createElement("button");
+    renameBtn.textContent = "Rename";
+    renameBtn.className = "btn-secondary";
+    renameBtn.addEventListener("click", function () {
+      const currentName = preset.name || ("Preset " + (index + 1));
+      const input = window.prompt("Rename this preset:", currentName);
+      if (input === null) return; // cancelled
+
+      const newName = input.trim();
+      if (!newName) return;
+
+      preset.name = newName;
+      saveRunPresetsToStorage();
+      renderRunPresetsList();
+    });
+    actions.appendChild(renameBtn);
+
+    // Load
+const loadBtn = document.createElement("button");
+loadBtn.textContent = "Load";
+loadBtn.className = "btn-secondary";
+loadBtn.addEventListener("click", function () {
+  const displayName = preset.name || ("Preset " + (index + 1));
+
+  const confirmed = window.confirm(
+    'Load run preset "' + displayName + '"?\n\n' +
+    "This will overwrite your current run setup options."
+  );
+  if (!confirmed) return;
+
+  // Apply settings to the run setup UI
+  applyRunSettingsPreset(preset.settings);
+
+  // Scroll back up to the Run setup section so the user can see the change
+  const runSetupSection = document.getElementById("runSetupSection");
+  if (runSetupSection && typeof runSetupSection.scrollIntoView === "function") {
+    runSetupSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+});
+actions.appendChild(loadBtn);
+
+    // Delete
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "Delete";
+    deleteBtn.className = "btn-danger";
     deleteBtn.addEventListener("click", function () {
       const confirmed = window.confirm("Delete this run preset?");
       if (!confirmed) return;
@@ -259,8 +345,9 @@ function renderRunPresetsList() {
       saveRunPresetsToStorage();
       renderRunPresetsList();
     });
-    row.appendChild(deleteBtn);
+    actions.appendChild(deleteBtn);
 
+    row.appendChild(actions);
     container.appendChild(row);
   });
 }
@@ -285,6 +372,49 @@ function passesKeywordFilter(entry) {
   }
 
   return false;
+}
+
+function updateShopRuleBadges() {
+  const row = document.getElementById("shopRuleBadges");
+  const chipGift = document.getElementById("chipGiftRule");
+  const chipNoRe = document.getElementById("chipNoReobtain");
+  const chipSinners = document.getElementById("chipShopSinners");
+
+  if (!row) return;
+
+  const any =
+    egoGiftRuleEnabled ||
+    egoGiftNoReacquireRuleEnabled ||
+    randomiseSinnersEachShopEnabled;
+
+  row.classList.toggle("hidden", !any);
+
+  if (chipGift) {
+    chipGift.classList.toggle("hidden", !egoGiftRuleEnabled);
+  }
+  if (chipNoRe) {
+    chipNoRe.classList.toggle(
+      "hidden",
+      !(egoGiftRuleEnabled && egoGiftNoReacquireRuleEnabled)
+    );
+  }
+  if (chipSinners) {
+    chipSinners.classList.toggle("hidden", !randomiseSinnersEachShopEnabled);
+  }
+}
+
+function updateEgoGiftActiveFiltersText() {
+  const el = document.getElementById("egoGiftActiveFiltersText");
+  if (!el) return;
+
+  if (activeGiftKeywordFilters.size === 0) {
+    el.textContent = "No gift keyword filters active.";
+  } else {
+    const arr = Array.from(activeGiftKeywordFilters).map(function (k) {
+      return k.charAt(0).toUpperCase() + k.slice(1);
+    });
+    el.textContent = "Active filters: " + arr.join(", ");
+  }
 }
 
 function updateActiveKeywordFiltersDisplay() {
@@ -1180,6 +1310,26 @@ function enforceShopSinnerSelectionLimit() {
   if (limitText) {
     limitText.textContent = String(limit);
   }
+
+    const hintEl = document.getElementById("shopSinnerHint");
+  if (hintEl) {
+    if (checkedCount === 0) {
+      hintEl.textContent =
+        " You haven't selected anyone – the randomiser will pick all " +
+        limit +
+        " Sinners at random.";
+    } else if (checkedCount < limit) {
+      hintEl.textContent =
+        " You picked " +
+        checkedCount +
+        " Sinner(s); " +
+        (limit - checkedCount) +
+        " more will be chosen at random.";
+    } else {
+      hintEl.textContent =
+        " All " + limit + " Sinners will be re-randomised as selected.";
+    }
+  }
 }
 
 function getManuallySelectedSinners() {
@@ -1533,6 +1683,8 @@ const resetOwnershipBtn = document.getElementById("resetOwnershipBtn");
 const selectAllIdsBtn = document.getElementById("selectAllIdsBtn");
 const selectAllEgosBtn = document.getElementById("selectAllEgosBtn");
 const selectAllOwnershipBtn = document.getElementById("selectAllOwnershipBtn");
+const expandAllSinnersBtn = document.getElementById("expandAllSinnersBtn");
+const collapseAllSinnersBtn = document.getElementById("collapseAllSinnersBtn");
 
 // NEW: run setup toggles
 const randomizeNumSinnersToggle = document.getElementById("randomizeNumSinnersToggle");
@@ -1558,18 +1710,34 @@ const egoGiftBannedList = document.getElementById("egoGiftBannedList");
 const shopReachedBtn = document.getElementById("shopReachedBtn");
 const shopReachedSinnerOnlyBtn = document.getElementById("shopReachedSinnerOnlyBtn");
 const runCompletedBtn = document.getElementById("runCompletedBtn");
+const navShopToolsBtn = document.getElementById("navShopTools");
+const sideNavButtons = document.querySelectorAll(".side-nav-button[data-target]");
 
 // Shop Sinner controls
 const shopRandomNumToggle = document.getElementById("shopRandomNumToggle");
 const shopNumSinnersSelect = document.getElementById("shopNumSinners");
 const randomizeShopSinnersBtn = document.getElementById("randomizeShopSinnersBtn");
 
+// Side nav buttons: smooth-scroll to their target sections
+if (sideNavButtons && sideNavButtons.length) {
+  sideNavButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const targetId = btn.getAttribute("data-target");
+      if (!targetId) return;
+      const target = document.getElementById(targetId);
+      if (target && typeof target.scrollIntoView === "function") {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+}
+
 // EGO Gift keyword filters
 if (egoGiftKeywordFiltersContainer) {
   const boxes = egoGiftKeywordFiltersContainer.querySelectorAll(
     "input[type='checkbox'][data-gift-keyword]"
   );
-  boxes.forEach(function (box) {
+    boxes.forEach(function (box) {
     const kw = (box.dataset.giftKeyword || "").toLowerCase();
     if (!kw) return;
 
@@ -1579,9 +1747,13 @@ if (egoGiftKeywordFiltersContainer) {
       } else {
         activeGiftKeywordFilters.delete(kw);
       }
+      updateEgoGiftActiveFiltersText();
       renderEgoGiftLists();
     });
   });
+
+  // Initial text
+  updateEgoGiftActiveFiltersText();
 }
 
 // Gift search
@@ -1644,9 +1816,26 @@ const clearRunPresetsBtn = document.getElementById("clearRunPresetsBtn");
 if (saveRunPresetBtn) {
   saveRunPresetBtn.addEventListener("click", function () {
     const settings = gatherCurrentRunSettings();
-    const name = (runPresetNameInput && runPresetNameInput.value.trim())
-      ? runPresetNameInput.value.trim()
-      : "Preset " + (savedRunPresets.length + 1);
+    if (!settings) return;
+
+    // Try the "Preset name" input first
+    let name = runPresetNameInput && runPresetNameInput.value.trim();
+
+    // If it's empty, ask the user now
+    if (!name) {
+      const defaultName = "Preset " + (savedRunPresets.length + 1);
+      const input = window.prompt(
+        "Enter a name for this run preset:",
+        defaultName
+      );
+
+      // Cancel → do nothing
+      if (input === null) {
+        return;
+      }
+
+      name = input.trim() || defaultName;
+    }
 
     savedRunPresets.push({
       name: name,
@@ -1801,6 +1990,38 @@ if (toggleSettingsBtn && ownershipContainer) {
   });
 }
 
+if (expandAllSinnersBtn) {
+  expandAllSinnersBtn.addEventListener("click", function () {
+    if (ownershipContainer) {
+      ownershipContainer.classList.remove("hidden");
+    }
+    const blocks = document.querySelectorAll("#ownershipContainer .sinner-block");
+    blocks.forEach(function (block) {
+      const body = block.querySelector(".sinner-body");
+      const toggleSpan = block.querySelector(".sinner-header-toggle");
+      if (body && body.classList.contains("hidden")) {
+        body.classList.remove("hidden");
+      }
+      if (toggleSpan) {
+        toggleSpan.textContent = "[-]";
+      }
+    });
+  });
+}
+
+if (collapseAllSinnersBtn) {
+  collapseAllSinnersBtn.addEventListener("click", function () {
+    const bodies = document.querySelectorAll("#ownershipContainer .sinner-body");
+    const toggles = document.querySelectorAll("#ownershipContainer .sinner-header-toggle");
+    bodies.forEach(function (body) {
+      body.classList.add("hidden");
+    });
+    toggles.forEach(function (toggle) {
+      toggle.textContent = "[+]";
+    });
+  });
+}
+
 // Search buttons
 if (ownershipSearchBtn) {
   ownershipSearchBtn.addEventListener("click", function () {
@@ -1897,15 +2118,25 @@ if (randomizeEgoRanksToggle) {
 
 function setRunSetupEnabled(enabled) {
   const runSetupSection = document.getElementById("runSetupSection");
+  const runSetupControls = document.getElementById("runSetupControls");
   if (!runSetupSection) return;
 
   const controls = runSetupSection.querySelectorAll("input, select, button");
   controls.forEach(function (el) {
-    // Don't disable the copy-result button or anything outside runSetup
+    // Don't disable the copy-result button
     if (el.id === "copyResultBtn") return;
     // Shop tools live in another section, so safe.
     el.disabled = !enabled;
   });
+
+  if (runSetupControls) {
+    runSetupControls.classList.toggle("collapsed", !enabled);
+  }
+
+  const badge = document.getElementById("runLockedBadge");
+  if (badge) {
+    badge.classList.toggle("hidden", enabled);
+  }
 }
 
 // Build text for "Randomise Sinners for current shop"
@@ -2106,6 +2337,8 @@ if (randomizeRunBtn) {
     egoGiftRuleEnabled = wantsGiftRule;
     egoGiftNoReacquireRuleEnabled = wantsGiftRule && wantsNoReobtain;
     randomiseSinnersEachShopEnabled = wantsRandomiseEachShop;
+        // Update the summary chips in the shop tools header
+    updateShopRuleBadges();
 
     // Reset per-run gift state
     currentFloorGiftIds.clear();
@@ -2117,6 +2350,11 @@ if (randomizeRunBtn) {
     // Show the whole shop tools section whenever *any* shop rule is on
     if (shopToolsSection) {
       shopToolsSection.classList.remove("hidden");
+    }
+
+    // Show "Shop tools" in the side nav only while a shop-rule run is active
+    if (navShopToolsBtn) {
+      navShopToolsBtn.classList.remove("hidden");
     }
 
     // EGO Gift panel only makes sense when the gift rule is enabled
@@ -2295,7 +2533,7 @@ if (runCompletedBtn) {
     );
     if (!ok) return;
 
-    runIsActive = false;
+        runIsActive = false;
     activeRunSettings = null;
     egoGiftRuleEnabled = false;
     egoGiftNoReacquireRuleEnabled = false;
@@ -2305,12 +2543,17 @@ if (runCompletedBtn) {
     bannedGiftIdsForRun.clear();
     activeGiftKeywordFilters.clear();
 
+    updateShopRuleBadges();
+
     if (shopToolsSection) {
       shopToolsSection.classList.add("hidden");
     }
 if (shopReachedSinnerOnlyBtn) {
   shopReachedSinnerOnlyBtn.classList.add("hidden");
 }
+    if (navShopToolsBtn) {
+      navShopToolsBtn.classList.add("hidden");
+    }
 
     // Re-enable the Run setup
     setRunSetupEnabled(true);

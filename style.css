@@ -52,7 +52,7 @@ h1 {
 /* Card-style sections */
 section {
   max-width: 960px;
-  margin: 0 auto 1.5rem auto;
+  margin: 0 auto 1.5rem auto; /* center each card again */
 
   /* slightly more transparent, and a tiny blur for readability */
   background: rgba(15, 23, 42, 0.86); /* was 0.94 */
@@ -342,6 +342,29 @@ pre {
   margin-top: 0.25rem;
 }
 
+/* Run presets list */
+.run-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.run-preset-name {
+  font-weight: 500;
+}
+
+.run-preset-actions {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.run-preset-actions button {
+  margin-top: 0; /* override global button margin so they line up nicely */
+}
+
 /* Search highlight (if you added this earlier, keep it) */
 .search-hit {
   outline: 1px solid #f97316;
@@ -480,4 +503,227 @@ pre {
 /* Extra spacing so "Run completed" is harder to misclick */
 .run-completed-btn {
   margin-top: 1.25rem;
+}
+/* Top navigation between sections */
+#pageNav {
+  max-width: 960px;
+  margin: 0.75rem auto 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: flex-start;
+  font-size: 0.85rem;
+}
+
+#pageNav a {
+  text-decoration: none;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+#pageNav a:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Run setup dimmed while a run is active */
+#runSetupControls.collapsed {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}
+/* Button hierarchy */
+button {
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.05s ease,
+    box-shadow 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Primary */
+.btn-primary {
+  background-color: #2f83ff;
+  border: 1px solid #6aa5ff;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #4b96ff;
+}
+
+/* Secondary */
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Danger */
+.btn-danger {
+  background-color: rgba(200, 70, 70, 0.15);
+  border: 1px solid rgba(255, 120, 120, 0.7);
+  color: #ffb4b4;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: rgba(220, 90, 90, 0.25);
+}
+#runResult {
+  margin-top: 0.5rem;
+  padding: 1rem 1.25rem;
+  background-color: rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: "Consolas", "Fira Code", monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-height: 520px;
+  overflow-y: auto;
+  white-space: pre-wrap; /* wrap long lines instead of horizontal scroll */
+}
+
+/* Copy result button aligned to the right under the pre */
+#copyResultBtn {
+  display: block;
+  margin-top: 0.5rem;
+  margin-left: auto;
+}
+.chip-row {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+#egoGiftFilters {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 0.75rem;
+}
+
+#egoGiftLists {
+  margin-top: 0.5rem;
+}
+#ownershipContainer .ownership-item.search-hit {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  outline: 1px solid rgba(255, 255, 255, 0.4);
+}
+.gift-row,
+.sinner-select-item {
+  transition: background-color 0.12s ease, transform 0.06s ease;
+}
+
+.gift-row:hover,
+.sinner-select-item:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.gift-row.selected {
+  background-color: rgba(255, 255, 255, 0.09);
+}
+/* --- Left side navigation --- */
+
+.page-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+
+  /* NEW: center the nav + content group on the page */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Main column flexes, nav stays narrow */
+#mainContent {
+  flex: 1 1 auto;
+}
+
+/* Vertical, sticky nav */
+#sideNav {
+  flex: 0 0 180px;          /* width of the nav column */
+  position: sticky;
+  top: 1rem;                /* distance from top when sticking */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.side-nav-button {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.side-nav-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.side-nav-button:active {
+  transform: translateY(0);
+}
+
+.side-nav-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin: 0 0 0.5rem 0;
+}
+
+/* Mobile: nav goes back to top as a row of buttons */
+@media (max-width: 900px) {
+  .page-layout {
+    flex-direction: column;
+  }
+
+  #sideNav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .side-nav-button {
+    flex: 1 1 auto;
+    text-align: center;
+  }
 }

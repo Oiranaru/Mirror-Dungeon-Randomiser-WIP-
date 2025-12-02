@@ -6,137 +6,187 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Mirror Dungeon Randomiser</h1>
+  <div class="page-layout">
+    <!-- Left side nav -->
+    <nav id="sideNav">
+  <div class="side-nav-title">Quick navigation</div>
 
+  <button type="button"
+          class="side-nav-button"
+          data-target="runSetupSection">
+    Run setup
+  </button>
+
+  <button type="button"
+          id="navShopTools"
+          class="side-nav-button hidden"
+          data-target="shopToolsSection">
+    Shop tools
+  </button>
+
+  <button type="button"
+          class="side-nav-button"
+          data-target="runPresetsSection">
+    Run presets
+  </button>
+
+  <button type="button"
+          class="side-nav-button"
+          data-target="settings">
+    Owned IDs/EGOs
+  </button>
+
+  <button type="button"
+          class="side-nav-button"
+          data-target="saved-teams">
+    Saved teams
+  </button>
+</nav>
+
+    <!-- Main content -->
+    <main id="mainContent">
+      <h1>Mirror Dungeon Randomiser</h1>
   <!-- Run setup -->
   <section id="runSetupSection">
-  <h2>Run setup</h2>
+    <h2>Run setup</h2>
 
-    <!-- Number of Sinners + toggle -->
-  <div class="run-field-group">
-    <label class="inline-toggle-label">
-      <input type="checkbox" id="randomizeNumSinnersToggle" checked>
-      Randomise number of Sinners (1–11); leave unchecked to randomise all 12 Sinners
-    </label>
+    <!-- Status text when setup is locked -->
+    <p id="runLockedBadge" class="small-note hidden">
+      Run in progress – run setup is locked until you press
+      <strong>Run completed</strong> in the Shop tools section.
+    </p>
 
-    <label>
-      <span class="field-label">How many Sinners?</span>
-      <select id="numSinners">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-        <option value="11" selected>11</option>
-      </select>
-    </label>
-  </div>
+    <!-- Wrapper around all the setup controls -->
+    <div id="runSetupControls">
 
-  <div id="manualSinnerSelect" class="hidden">
-  <label class="inline-toggle-label">
-    <input type="checkbox" id="useManualSinnerSelection">
-    <span id="manualSinnerHelpText">
-      Select the Sinners you wish to randomise (leave unchecked if you want the randomiser to pick the Sinners for you)
-    </span>
-  </label>
-  <div id="manualSinnerCheckboxes" class="sinner-select-grid"></div>
-</div>
+      <!-- Number of Sinners + toggle -->
+      <div class="run-field-group">
+        <label class="inline-toggle-label">
+          <input type="checkbox" id="randomizeNumSinnersToggle" checked>
+          Randomise number of Sinners (1–11); leave unchecked to randomise all 12 Sinners
+        </label>
 
-  <!-- EGOs per Sinner + rank filter toggle -->
-<div class="run-field-group">
-  <label>
-  EGOs per Sinner (1–4):
-  <select id="egosPerSinner">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3" selected>3</option>
-    <option value="4">4</option>
-  </select>
-</label>
+        <label>
+          <span class="field-label">How many Sinners?</span>
+          <select id="numSinners">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11" selected>11</option>
+          </select>
+        </label>
+      </div>
 
-  <label class="inline-toggle-label">
-    <input type="checkbox" id="randomizeEgoRanksToggle">
-    Randomise certain ranks of EGO
-  </label>
-</div>
+      <!-- Manual Sinner selection -->
+      <div id="manualSinnerSelect" class="hidden">
+        <label class="inline-toggle-label">
+          <input type="checkbox" id="useManualSinnerSelection">
+          <span id="manualSinnerHelpText">
+            Select the Sinners you wish to randomise (leave unchecked if you want the randomiser to pick the Sinners for you)
+          </span>
+        </label>
+        <div id="manualSinnerCheckboxes" class="sinner-select-grid"></div>
+      </div>
 
-<!-- EGO rank filter (only visible when the above toggle is ON) -->
-<div id="egoRankFilterContainer" class="hidden">
-  <p>Which EGO ranks can be randomised?</p>
+      <!-- EGOs per Sinner + rank filter toggle -->
+      <div class="run-field-group">
+        <label>
+          EGOs per Sinner (1–4):
+          <select id="egosPerSinner">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+          </select>
+        </label>
 
-  <label class="keyword-filter">
-    <input type="checkbox" data-ego-rank="ZAYIN" id="egoRankZayin" checked>
-    ZAYIN
-  </label>
-  <label class="keyword-filter">
-    <input type="checkbox" data-ego-rank="TETH" id="egoRankTeth" checked>
-    TETH
-  </label>
-  <label class="keyword-filter">
-    <input type="checkbox" data-ego-rank="HE" id="egoRankHe" checked>
-    HE
-  </label>
-  <label class="keyword-filter">
-    <input type="checkbox" data-ego-rank="WAW" id="egoRankWaw" checked>
-    WAW
-  </label>
-  <label class="keyword-filter">
-    <input type="checkbox" data-ego-rank="ALEPH" id="egoRankAleph" disabled>
-    ALEPH (not available yet)
-  </label>
+        <label class="inline-toggle-label">
+          <input type="checkbox" id="randomizeEgoRanksToggle">
+          Randomise certain ranks of EGO
+        </label>
+      </div>
 
-  <p class="small-note">
-    Note: each Sinner always brings exactly one ZAYIN EGO. If ZAYIN is unchecked here,
-    they will keep their base ZAYIN instead of randomising it.
-  </p>
-</div>
+      <!-- EGO rank filter (only visible when the above toggle is ON) -->
+      <div id="egoRankFilterContainer" class="hidden">
+        <p>Which EGO ranks can be randomised?</p>
 
-<!-- Shop rules for EGO Gifts -->
-<div class="run-field-group">
-  <label class="inline-toggle-label">
-    <input type="checkbox" id="enableGiftShopRule">
-    Enable rule of selling all EGO Gifts when reaching a shop
-  </label>
+        <label class="keyword-filter">
+          <input type="checkbox" data-ego-rank="ZAYIN" id="egoRankZayin" checked>
+          ZAYIN
+        </label>
+        <label class="keyword-filter">
+          <input type="checkbox" data-ego-rank="TETH" id="egoRankTeth" checked>
+          TETH
+        </label>
+        <label class="keyword-filter">
+          <input type="checkbox" data-ego-rank="HE" id="egoRankHe" checked>
+          HE
+        </label>
+        <label class="keyword-filter">
+          <input type="checkbox" data-ego-rank="WAW" id="egoRankWaw" checked>
+          WAW
+        </label>
+        <label class="keyword-filter">
+          <input type="checkbox" data-ego-rank="ALEPH" id="egoRankAleph" disabled>
+          ALEPH (not available yet)
+        </label>
 
-  <!-- NOTE: starts disabled; JS will enable it when the first rule is on -->
-  <label class="inline-toggle-label" id="giftNoReacquireLabel">
-    <input type="checkbox" id="enableGiftNoReacquireRule" disabled>
-    Don't allow an EGO Gift to be re-obtained once sold off
-  </label>
-</div>
+        <p class="small-note">
+          Note: each Sinner always brings exactly one ZAYIN EGO. If ZAYIN is unchecked here,
+          they will keep their base ZAYIN instead of randomising it.
+        </p>
+      </div>
 
-<div class="run-field-group">
-  <label class="inline-toggle-label">
-    <input type="checkbox" id="enableRandomiseSinnersEachShop">
-    Randomise Sinners at each Shop
-  </label>
-</div>
+      <!-- Shop rules for EGO Gifts -->
+      <div class="run-field-group">
+        <label class="inline-toggle-label">
+          <input type="checkbox" id="enableGiftShopRule">
+          Enable rule of selling all EGO Gifts when reaching a shop
+        </label>
 
-  <!-- Deployment order -->
-  <div class="run-field-group">
-    <label>
-      <input type="checkbox" id="randomizeOrder">
-      Randomise deployment order (1–7 on-field, rest support)
-    </label>
-  </div>
+        <!-- Starts disabled; JS will enable it when the first rule is on -->
+        <label class="inline-toggle-label" id="giftNoReacquireLabel">
+          <input type="checkbox" id="enableGiftNoReacquireRule" disabled>
+          Don't allow an EGO Gift to be re-obtained once sold off
+        </label>
+      </div>
 
-  <!-- Run + preset buttons -->
-  <div class="run-buttons">
-    <button id="randomizeRunBtn">Randomise Run</button>
-    <button id="saveRunPresetBtn" class="hidden">
-      Save latest randomiser settings as preset
-    </button>
-  </div>
+      <div class="run-field-group">
+        <label class="inline-toggle-label">
+          <input type="checkbox" id="enableRandomiseSinnersEachShop">
+          Randomise Sinners at each Shop
+        </label>
+      </div>
 
-  <h3>Result</h3>
-  <pre id="runResult"></pre>
-  <button id="copyResultBtn">Copy result to clipboard</button>
-</section>
+      <!-- Deployment order -->
+      <div class="run-field-group">
+        <label>
+          <input type="checkbox" id="randomizeOrder">
+          Randomise deployment order (1–7 on-field, rest support)
+        </label>
+      </div>
+
+      <!-- Run + preset buttons -->
+      <div class="run-buttons">
+        <button id="randomizeRunBtn" class="btn-primary">Randomise Run</button>
+        <button id="saveRunPresetBtn" class="btn-secondary hidden">
+          Save latest randomiser settings as preset
+        </button>
+      </div>
+      
+    </div> <!-- end #runSetupControls -->
+
+    <h3>Result</h3>
+    <pre id="runResult"></pre>
+    <button id="copyResultBtn" class="btn-secondary">Copy result to clipboard</button>
+  </section>
 
 <!-- Shop / EGO Gift tools (only visible when shop rules are enabled) -->
 <section id="shopToolsSection" class="hidden">
@@ -147,6 +197,11 @@
     EGO Gifts and (optionally) re-randomise Sinners at each shop. Press
     <strong>Run completed</strong> when you finish the run to unlock the setup again.
   </p>
+<div id="shopRuleBadges" class="chip-row hidden">
+  <span id="chipGiftRule" class="chip">Gift rule: Sell all gifts</span>
+  <span id="chipNoReobtain" class="chip">No re-obtain: On</span>
+  <span id="chipShopSinners" class="chip">Sinner rerolls at shop: On</span>
+</div>
 
   <!-- EGO Gift tools -->
   <div id="egoGiftTools">
@@ -197,6 +252,10 @@
       </div>
     </div>
 
+    <p id="egoGiftActiveFiltersText" class="small-note">
+    No gift keyword filters active.
+    </p>
+
     <div id="egoGiftLists">
       <div class="gift-list-column">
         <h4>Available EGO Gifts</h4>
@@ -223,9 +282,9 @@
       </div>
     </div>
 
-    <button id="shopReachedBtn">
-      Shop reached – sell all current EGO Gifts
-    </button>
+    <button id="shopReachedBtn" class="btn-primary">
+  Shop reached – sell all current EGO Gifts
+</button>
     <p class="small-note">
       This clears the list of current gifts. If the "no re-obtain" rule is enabled,
       sold gifts are permanently locked for the rest of the run.
@@ -233,9 +292,9 @@
   </div>
 
   <!-- Sinner-only "shop reached" button (shown when no EGO Gift rules are active) -->
-  <button id="shopReachedSinnerOnlyBtn" class="hidden">
-    Shop reached – show Sinner randomise UI
-  </button>
+  <button id="shopReachedSinnerOnlyBtn" class="btn-primary hidden">
+  Shop reached – show Sinner randomise UI
+</button>
 
   <!-- Sinner re-randomiser (only used when "Randomise Sinners at each Shop" is on) -->
   <div id="shopSinnerTools" class="hidden">
@@ -258,21 +317,25 @@
     </div>
 
     <p class="small-note">
-      Pick up to <span id="shopSinnerLimitText">3</span> Sinners below to re-randomise their Identities for this shop.
-    </p>
+  Pick up to <span id="shopSinnerLimitText">3</span> Sinners below to re-randomise
+  their Identities for this shop.
+  <span id="shopSinnerHint">
+    You haven't selected anyone – the randomiser will pick all 3 Sinners at random.
+  </span>
+</p>
 
     <div id="shopSinnerSelect" class="sinner-select-grid">
       <!-- checkboxes are injected by main.js -->
     </div>
 
-    <button id="randomizeShopSinnersBtn">
-      Randomise Sinners for current shop
-    </button>
+    <button id="randomizeShopSinnersBtn" class="btn-primary">
+  Randomise Sinners for current shop
+</button>
   </div>
 
-  <button id="runCompletedBtn" class="run-completed-btn">
-    Run completed – unlock run setup
-  </button>
+  <button id="runCompletedBtn" class="btn-danger run-completed-btn">
+  Run completed – unlock run setup
+</button>
 </section>
 
 <!-- New section: saved run presets -->
@@ -283,7 +346,7 @@
       Preset name:
       <input type="text" id="runPresetNameInput" placeholder="e.g. 8 Sinners, Bleed/Tremor focus">
     </label>
-    <button id="clearRunPresetsBtn">Clear all presets</button>
+    <button id="clearRunPresetsBtn" class="btn-danger">Clear all presets</button>
   </div>
   <div id="savedRunPresetsContainer">No presets saved yet.</div>
 </section>
@@ -351,11 +414,13 @@
   </div>
 </div>
 
-  <button id="toggleSettings">Show / hide IDs/EGOs</button>
-  <button id="resetOwnershipBtn">Reset to LCB ID/base ZAYIN EGO only</button>
-  <button id="selectAllIdsBtn">Select all IDs</button>
-  <button id="selectAllEgosBtn">Select all EGOs</button>
-  <button id="selectAllOwnershipBtn">Select all IDs/EGOs</button>
+<button id="toggleSettings">Show / hide IDs/EGOs</button>
+<button id="expandAllSinnersBtn" class="btn-secondary">Expand all Sinners</button>
+<button id="collapseAllSinnersBtn" class="btn-secondary">Collapse all Sinners</button>
+<button id="resetOwnershipBtn" class="btn-danger">Reset to LCB ID/base ZAYIN EGO only</button>
+<button id="selectAllIdsBtn" class="btn-secondary">Select all IDs</button>
+<button id="selectAllEgosBtn" class="btn-secondary">Select all EGOs</button>
+<button id="selectAllOwnershipBtn" class="btn-secondary">Select all IDs/EGOs</button>
 
   <div id="ownershipContainer" class="hidden"></div>
 </section>
@@ -367,11 +432,13 @@
       Team name:
       <input type="text" id="saveTeamName" placeholder="e.g. Funny Bleed Run">
     </label>
-    <button id="saveTeamBtn">Save current result</button>
-    <button id="clearTeamsBtn">Clear all saved teams</button>
+    <button id="saveTeamBtn" class="btn-primary">Save current result</button>
+<button id="clearTeamsBtn" class="btn-danger">Clear all saved teams</button>
 
     <div id="savedTeamsList"></div>
   </section>
+</main>
+  </div>
 
   <script src="data.js"></script>
   <script src="main.js"></script>
